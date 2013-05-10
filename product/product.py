@@ -18,7 +18,7 @@ product=models.product()
 class product_by_id:
 
     def GET(self,id):
-        return json.dumps(product.get_product_by_id(id).list(),cls=encoder.DateEncoder,ensure_ascii=False)
+        return json.dumps(product.get_product_by_id(id),cls=encoder.DateEncoder,ensure_ascii=False)
 
     def PUT(self,id):
         json_data=json.loads(web.data())
@@ -46,10 +46,18 @@ class show_product:
 
     def GET(self):
         try:
-            product_type=web.input().product_type
-            return json.dumps(product.get_product_by_type(product_type).list(),cls=encoder.DateEncoder,ensure_ascii=False)
+            params=web.input()
+            product_type=params.product_type
+            page=params.page if hasattr(params, 'page') else 1
+            perpage = 10
+            offset = (int(page) - 1) * perpage
+
+            result= product.get_product_by_type_with_page(offset,perpage,product_type)
+            
+            return json.dumps(result,
+                    cls=encoder.DateEncoder,ensure_ascii=False)
         except:
-            return sr.show_result_false()
+            return sr.show_result_fail()
 
 app_product = web.application(urls, locals())        
 

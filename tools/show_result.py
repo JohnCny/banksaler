@@ -13,7 +13,7 @@ def show_result_message(message):
     web.ctx.status = '500 Failed'
     return json.dumps(message,ensure_ascii=False)
 
-def show_result_false():
+def show_result_fail():
     web.ctx.status = '500 Failed'
     return json.dumps({'result':'Failed'})
     

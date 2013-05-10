@@ -14,13 +14,26 @@ class my_product:
 
 class product:
         def get_product(self):
-            return db.select('product', order='product_create_date DESC')
+            return db.select('product', order='product_create_date DESC').list()
 
         def get_product_by_type(self,product_type_id):
-            return db.select('product',where='product_type=$product_type_id',vars=locals())
+            return db.select('product',where='product_type=$product_type_id',vars=locals()).list()
 
         def get_product_by_id(self,id):
-            return db.select('product', where='id=$id', vars=locals())
+            return db.select('product', where='id=$id', vars=locals()).list()
+        
+        def get_product_by_type_with_page(self,offset,limit,product_type_id):
+            
+            result=db.select('product',order="product_create_date DESC",where='product_type=$product_type_id',
+                    offset=offset,limit=limit,vars=locals()).list()
+            product_count = settings.db.query("SELECT COUNT(*) AS count FROM product")[0]
+            pages = product_count.count / limit
+            
+            if product_count.count % limit > 0:
+                pages += 1
+            
+            result.extend([{'pages':pages}])
+            return result
 
         def create_product(self,product):
             return db.insert('product',product_name=product.product_name,product_type=product.product_type,product_describe=product.product_describe,
@@ -47,10 +60,10 @@ class product:
 
 class product_type:
         def get_product_type(self):
-            return db.select('product_type')
+            return db.select('product_type').list()
         
         def get_product_type_by_id(self,id):
-            return db.select('product_type',where="id=$id", vars=locals())
+            return db.select('product_type',where="id=$id", vars=locals()).list()
 
         def create_product_type(self,type_name):
             return db.insert('product_type',type_name=type_name)
