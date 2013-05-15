@@ -4,7 +4,7 @@ import json
 import models
 import tools.show_result as sr
 import tools.json_encoding as encoder
-import os
+
 
 urls = (
     '(\d+)', 'product_by_id',
@@ -14,10 +14,6 @@ urls = (
 
 
 product=models.product()
-
-HERE = os.path.dirname(__file__)
-BASE_PATH= os.path.join(HERE,'..')
-IMG_PATH= os.path.join(BASE_PATH,'/img')
 
 """产品管理"""
 class product_by_id:
@@ -47,6 +43,7 @@ class create_product:
 """展示产品 
 url param:product_type
 """
+@validate_key
 class show_product:
 
     def GET(self):

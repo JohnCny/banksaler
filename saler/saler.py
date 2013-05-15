@@ -5,7 +5,6 @@ import models
 import json
 import tools.show_result as sr
 import tools.json_encoding as encoder
-import os
 
 urls=(
     '/list','get_saler_target_list',

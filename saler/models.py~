@@ -93,7 +93,7 @@ class operating_range:
         result.extend([{'pages':pages}])
         return result
     
-     def get_operating_range_by_id(self,id):
+    def get_operating_range_by_id(self,id):
         return db.select('operating_range',where="id=$id", vars=locals()).list()
 
     def create_operating_range(self,range_name):

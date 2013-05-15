@@ -26,7 +26,8 @@ class product:
             
             result=db.select('product',order="product_create_date DESC",where='product_type=$product_type_id',
                     offset=offset,limit=limit,vars=locals()).list()
-            product_count = settings.db.query("SELECT COUNT(*) AS count FROM product")[0]
+            product_count = settings.db.query("SELECT COUNT(*) AS count FROM product where product_type=$product_type_id",
+                    vars=locals())[0]
             pages = product_count.count / limit
             
             if product_count.count % limit > 0:

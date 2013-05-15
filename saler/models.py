@@ -55,7 +55,7 @@ class saler_target:
     def del_saler_target(self,id):
         return db.delete('saler_target', where="id=$id", vars=locals())
 
-    def update_saler_target(self,id,product):
+    def update_saler_target(self,id,saler_target):
         return db.update('saler_target', where="id=$id",company_name=saler_target.company_name,company_manager=saler_target.company_manager,
                 company_addr=saler_target.company_addr,main_operating_range=saler_target.main_operating_range,
                 staff_amount=saler_target.staff_amount,last_year_operating=saler_target.last_year_operating,

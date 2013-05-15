@@ -20,8 +20,9 @@ class login:
 
         if len(result):
             web.ctx.status = '200 Success'
-            return json.dumps({'result':'Success','username':result[0].real_name,
-                'user_id':result[0].id},separators=(',', ': '))
+            result_list=result.list()
+            return json.dumps({'result':'Success','userid':result_list[0].id,
+                'username':result_list[0].real_name,},separators=(',', ': '),ensure_ascii=False)
         else :
             web.ctx.status = '401 UnAuthorized'
             return json.dumps({'result':'UnAuthorized'},separators=(',', ': '))
