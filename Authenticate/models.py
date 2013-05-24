@@ -27,10 +27,15 @@ class users:
     
     def users_login(self,login_name,login_password):
         myvar=dict(login_name=login_name,login_password=login_password)
-        result=settings.db.select('users',myvar,where="login_name=$login_name and login_password=$login_password")
+        result=db.select('users',myvar,where="login_name=$login_name and login_password=$login_password")
         
         return result
-    
+
+    def get_users_name_by_org(self,org_id):
+        result=db.select('users',where="id in (select users_id from org_users where org_id=$org_id)",
+                         what="id,real_name",vars=locals()).list()
+        return result
+
     def get_users_list_paged(self,offset,limit):
         result=db.select('users',what='id,real_name,user_code',offset=offset,limit=limit,vars=locals()).list()
         counts = db.query("SELECT COUNT(*) AS count FROM users")[0]
@@ -185,6 +190,9 @@ class org_users:
     def get_org_by_users(self,users_id):
         return db.select('org_users',where="users_id=$users_id",vars=locals()).list()
 
+    def get_users_by_org(self,org_id):
+        return  db.select('org_users',where="org_id=$org_id",vars=locals()).list()
+
 
     def get_users_by_org_paged(self,offset,limit,org_id):
         result=db.select('org_users',where="org_id=$org_id",
@@ -326,6 +334,10 @@ class auth_key:
         auth_key.auth_key=data['auth_key']
     
         return auth_key 
+    
+    def get_users_id(self,auth_key):
+        return db.select('auth_key',where="auth_key=$auth_key",vars=locals()).list()
+        
 
     def check_auth_key(self,auth_key):
         result=db.select('auth_key',where="auth_key=$auth_key",vars=locals()).list()

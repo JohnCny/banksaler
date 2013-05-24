@@ -23,7 +23,8 @@ class get_saler_target_list:
             perpage = 10
             offset = (int(page) - 1) * perpage
             
-            return json.dumps(saler_target.get_saler_target_list_paged(offset,perpage),cls=encoder.DateEncoder,ensure_ascii=False)
+            return json.dumps(saler_target.get_saler_target_list_paged(offset,perpage)
+                                ,cls=encoder.DateEncoder,ensure_ascii=False)
         except:
             return sr.show_result_fail()
         

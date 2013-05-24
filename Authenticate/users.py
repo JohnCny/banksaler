@@ -9,7 +9,8 @@ urls=(
     '/list','get_users_list',
     '/create','create_users',
     '/(\d+)','manage_users',
-    '/login','users_login'
+    '/login','users_login',
+    '/get_user_name/(\d+)','get_user_name',
 )
 
 users=models.users()
@@ -74,5 +75,10 @@ class users_login:
         else :
             web.ctx.status = '401 UnAuthorized'
             return json.dumps({'result':'UnAuthorized'},separators=(',', ': '))
+
+class get_user_name:
+    def GET(self,org_id):
+        return json.dumps(users.get_users_name_by_org(org_id),ensure_ascii=False)
+
                 
 app_users = web.application(urls, locals())

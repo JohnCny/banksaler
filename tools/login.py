@@ -3,6 +3,7 @@
 import web
 import json
 import settings
+import Authenticate.models
 
 urls=(
     '/','login'
@@ -21,8 +22,11 @@ class login:
         if len(result):
             web.ctx.status = '200 Success'
             result_list=result.list()
-            return json.dumps({'result':'Success','userid':result_list[0].id,
-                'username':result_list[0].real_name,},separators=(',', ': '),ensure_ascii=False)
+            org_users=Authenticate.models.org_users()
+            org_result=org_users.get_org_by_users(result_list[0].id)
+            if len(org_result):
+                return json.dumps({'result':'Success','userid':result_list[0].id,
+                    'username':result_list[0].real_name,'org_id':org_result[0].id},separators=(',', ': '),ensure_ascii=False)
         else :
             web.ctx.status = '401 UnAuthorized'
             return json.dumps({'result':'UnAuthorized'},separators=(',', ': '))

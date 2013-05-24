@@ -39,13 +39,13 @@ class upload_img:
             except:
                 return sr.show_result_fail()
             
-            return '/static/upload/img/'+file_name
+            return 'img/'+file_name
 
 class upload_file:
     def POST(self):
-        files = web.input(file_path={})
+        files = web.input(file={})
 
-        if 'file_path' in files:
+        if 'file' in files:
             """设置服务器端目录"""
             homedir = os.getcwd()
             filedir = '%s/static/upload/file' %homedir
@@ -61,9 +61,7 @@ class upload_file:
             """从本地读取文件二进制流并传输至服务端"""
             
             try:
-                with open(files.file_path) as f_in:
-                    data = f_in.read()
-                f_in.close()
+                data=files['file'].file.read()
 
                 with open(filedir+'/'+file_name, 'w') as f_out:
                     f_out.write(data)
@@ -71,13 +69,13 @@ class upload_file:
             except:
                 return sr.show_result_fail() 
             
-            return '/static/upload/file/'+file_name
+            return 'file/'+file_name
 
 class upload_video:
     def POST(self):
-        files = web.input(file_path={})
+        files = web.input(file={})
 
-        if 'file_path' in files:
+        if 'file' in files:
             """设置服务器端目录"""
             homedir = os.getcwd()
             filedir = '%s/static/upload/video' %homedir
@@ -93,9 +91,7 @@ class upload_video:
             """从本地读取文件二进制流并传输至服务端"""
             
             try:
-                with open(files.file_path,'rb') as f_in:
-                    data = f_in.read()
-                f_in.close()
+                data=files['file'].file.read()
 
                 with open(filedir+'/'+file_name, 'wb') as f_out:
                     f_out.write(data)
@@ -103,13 +99,13 @@ class upload_video:
             except:
                 return sr.show_result_fail() 
             
-            return '/static/upload/video/'+file_name
+            return 'video/'+file_name
 
 class upload_voice:
     def POST(self):
-        files = web.input(file_path={})
+        files = web.input(file={})
 
-        if 'file_path' in files:
+        if 'file' in files:
             """设置服务器端目录"""
             homedir = os.getcwd()
             filedir = '%s/static/upload/voice' %homedir
@@ -125,9 +121,7 @@ class upload_voice:
             """从本地读取文件二进制流并传输至服务端"""
             
             try:
-                with open(files.file_path, 'rb') as f_in:
-                    data = f_in.read()
-                f_in.close()
+                data=files['file'].file.read()
 
                 with open(filedir+'/'+file_name, 'wb') as f_out:
                     f_out.write(data)
@@ -135,6 +129,6 @@ class upload_voice:
             except:
                 return sr.show_result_fail() 
             
-            return '/static/upload/voice/'+file_name
+            return 'voice/'+file_name
         
 app_file_upload = web.application(urls, locals())

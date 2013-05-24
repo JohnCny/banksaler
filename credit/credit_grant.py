@@ -20,11 +20,13 @@ class get_credit_grant_list:
     def GET(self):
         try:
             params=web.input()
+            credit_type=params.credit_type
             page=params.page if hasattr(params, 'page') else 1
             perpage = 10
             offset = (int(page) - 1) * perpage
             
-            return json.dumps(credit_grant.get_credit_grant_list_paged(offset,perpage),cls=encoder.DateEncoder,ensure_ascii=False)
+            return json.dumps(credit_grant.get_credit_grant_list_paged(credit_type,offset,perpage),
+                              cls=encoder.DateEncoder,ensure_ascii=False)
         except:
             return sr.show_result_fail()
         

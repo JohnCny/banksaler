@@ -1,5 +1,9 @@
 #coding:utf8
 import datetime,settings
+import tools.pagination
+import MySQLdb
+
+pager=tools.pagination.pager()
 
 db = settings.db
 """构造product类 简化传参"""
@@ -22,19 +26,13 @@ class product:
         def get_product_by_id(self,id):
             return db.select('product', where='id=$id', vars=locals()).list()
         
-        def get_product_by_type_with_page(self,offset,limit,product_type_id):
-            
-            result=db.select('product',order="product_create_date DESC",where='product_type=$product_type_id',
-                    offset=offset,limit=limit,vars=locals()).list()
-            product_count = settings.db.query("SELECT COUNT(*) AS count FROM product where product_type=$product_type_id",
-                    vars=locals())[0]
-            pages = product_count.count / limit
-            
-            if product_count.count % limit > 0:
-                pages += 1
-            
-            result.extend([{'pages':pages}])
-            return result
+        def get_product_by_type_with_page(self,product_type_id,page_num=1,per_page=10):
+            product_type_id=MySQLdb.escape_string(product_type_id)
+
+            where="product_type='%s'"%product_type_id
+
+            return pager.result_paged('product',where=where,
+                                      order="product_create_date DESC",page_num=page_num,per_page=per_page)
 
         def create_product(self,product):
             return db.insert('product',product_name=product.product_name,product_type=product.product_type,product_describe=product.product_describe,

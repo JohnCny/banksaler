@@ -33,7 +33,14 @@ def get_operate_by_user(users_id):
     
     return result
     
-
-
+def get_users_id():
+    auth_head=web.ctx.env.get('HTTP_AUTHORIZATION')
+    auth_key=models.auth_key()
+    users_id=auth_key.get_users_id(auth_head)
+    if len(users_id) :
+        return users_id
+    else:
+        return False
+   
 
 

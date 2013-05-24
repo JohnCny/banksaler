@@ -1,7 +1,12 @@
 #coding:utf8
 import datetime,settings
+import Authenticate.models
+import MySQLdb
+import tools.pagination
 
 db=settings.db
+users=Authenticate.models.users()
+pager=tools.pagination.pager()
 
 class saler_target:
     company_name=''
@@ -15,7 +20,7 @@ class saler_target:
     is_customer=''
     is_credit_customer=''
     saler_opinion=''
-    entry_user=''
+    create_user=''
     create_date=''
     modify_date=''
     modify_user=''
@@ -24,12 +29,42 @@ class saler_target:
 
     def get_saler_target(self):
         return db.select('saler_target', order='create_date DESC').list()
-    """返回id与公司名称"""
+    """返回id,公司名称,负责人，地址"""
     def get_saler_target_list(self):
-        return db.select('saler_target',what='id,company_name,company_manager',group="company_manager").list()
-    
+        return db.select('saler_target',what='id,company_name,company_manager,company_addr',group="company_manager").list()
+
+    def get_saler_target_list_by_condition(self,page_num,per_page,create_user,beg_date,end_date):
+        where=''
+
+        """SQL防注入"""
+        create_user=MySQLdb.escape_string(create_user)
+        beg_date=MySQLdb.escape_string(beg_date)
+        end_date=MySQLdb.escape_string(end_date)
+
+        if create_user!=0:
+            where+='create_user=%(create_user)s and '%create_user
+        if beg_date!='0' and end_date!='0':
+            where+='create_date between %(beg_date)s and %(end_date)s and '%(beg_date,end_date)
+        elif end_date=='0':
+            where+='create_date>=%(beg_date)s and '%beg_date
+        elif beg_date=='0':
+            where+='create_date<=%(end_date)s and '%end_date
+
+        where+='1=1'
+
+        result=pager.result_paged('product',where=where,
+                                order="product_create_date DESC",page_num=page_num,per_page=per_page)
+
+        """替换结果集中的人员id"""
+        for item in result:
+            id=item.create_user
+            item.create_user=users.get_users_by_id(id)[0]['real_name']
+
+        return result
+
+
     def get_saler_target_list_paged(self,offset,limit):
-        result=db.select('saler_target',what='id,company_name,company_manager',order="create_date DESC",
+        result=db.select('saler_target',what='id,company_name,company_manager,company_addr',order="create_date DESC",
                 offset=offset,limit=limit).list()
         counts = settings.db.query("SELECT COUNT(*) AS count FROM saler_target")[0]
         pages = counts.count / limit
@@ -49,7 +84,7 @@ class saler_target:
                 staff_amount=saler_target.staff_amount,last_year_operating=saler_target.last_year_operating,
                 main_bank=saler_target.main_bank,have_credit=saler_target.have_credit,is_customer=saler_target.is_customer,
                 is_credit_customer=saler_target.is_credit_customer,saler_opinion=saler_target.saler_opinion,
-                entry_user=saler_target.entry_user,create_date=datetime.datetime.utcnow(),
+                create_user=saler_target.create_user,create_date=datetime.datetime.utcnow(),
                 modify_date=datetime.datetime.utcnow(),modify_user=saler_target.modify_user)
 
     def del_saler_target(self,id):
@@ -76,7 +111,7 @@ class saler_target:
         saler_target.is_customer=data['is_customer']
         saler_target.is_credit_customer=data['is_credit_customer']
         saler_target.saler_opinion=data['saler_opinion']
-        saler_target.entry_user=data['entry_user']
+        saler_target.create_user=data['create_user']
         saler_target.modify_user=data['modify_user']
 
         return saler_target

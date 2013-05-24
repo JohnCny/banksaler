@@ -4,6 +4,7 @@ import json
 import models
 import tools.show_result as sr
 import tools.json_encoding as encoder
+import traceback
 
 urls = (
     '(\d+)', 'product_by_id',
@@ -49,15 +50,17 @@ class show_product:
             params=web.input()
             product_type=params.product_type
             page=params.page if hasattr(params, 'page') else 1
-            perpage = 10
-            offset = (int(page) - 1) * perpage
+            per_page=params.per_page if hasattr(params, 'per_page') else 10
 
-            result= product.get_product_by_type_with_page(offset,perpage,product_type)
-            
-            return json.dumps(result,
-                    cls=encoder.DateEncoder,ensure_ascii=False)
+            result= product.get_product_by_type_with_page(product_type,page_num=page,per_page=per_page)
+
+            if result:
+                return json.dumps(result,
+                        cls=encoder.DateEncoder,ensure_ascii=False)
+            else:
+                return sr.show_result_fail()
         except:
-            return sr.show_result_fail()
+            return sr.show_result_fail()+traceback.print_exc()
 
 app_product = web.application(urls, locals())        
 
