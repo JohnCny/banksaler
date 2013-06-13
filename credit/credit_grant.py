@@ -7,9 +7,9 @@ import tools.show_result as sr
 import tools.json_encoding as encoder
 
 urls=(
-    '/list','get_credit_grant_list',
-    '/create','create_credit_grant',
-    '/(\d+)','manage_credit_grant'
+    'list','get_credit_grant_list',
+    'create','create_credit_grant',
+    '(\d+)','manage_credit_grant'
 )
 
 credit_grant=models.credit_grant()
@@ -22,10 +22,10 @@ class get_credit_grant_list:
             params=web.input()
             credit_type=params.credit_type
             page=params.page if hasattr(params, 'page') else 1
-            perpage = 10
-            offset = (int(page) - 1) * perpage
+            perpage = params.perpage if hasattr(params, 'perpage') else 10
+
             
-            return json.dumps(credit_grant.get_credit_grant_list_paged(credit_type,offset,perpage),
+            return json.dumps(credit_grant.get_credit_grant_list_paged(credit_type,page,perpage),
                               cls=encoder.DateEncoder,ensure_ascii=False)
         except:
             return sr.show_result_fail()

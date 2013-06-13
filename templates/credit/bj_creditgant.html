@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	
+	<meta charset="utf-8">
+	<title>客户经理营销系统</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Charisma, a fully featured, responsive, HTML5, Bootstrap admin template.">
+	<meta name="author" content="Muhammad Usman">
+
+	<!-- The styles -->
+	<link href="../static/css/uniform.default.css" rel="stylesheet">
+	<link href="../static/css/jquery-ui-1.8.21.custom.css" rel="stylesheet"><!--日历样式-->
+	<link href="../static/css/bootstrap-cerulean.css" rel="stylesheet">
+	<link href="../static/css/charisma-app.css" rel="stylesheet">
+	<link href="../static/css/chosen.css" rel="stylesheet">
+	<style type="text/css">
+		.controls{padding-left:98px;}
+		.controls input[type=radio]{margin-top:-2px;margin-right:5px;}
+		label{margin-right:15px;}
+		input[type=text]{width:130px;margin-left:3px;}
+		select{width:145px;}
+		textarea{width:400px;resize:none;}
+		.box-content{padding:0;}
+		.form-horizontal .control-label{width:220px;}		
+		.form-horizontal .controls textarea{margin-left:3px;}
+		
+	</style>
+		
+	<!-- ************************验证样式************************-->
+	<script src="../static/SpryAssets/SpryValidationTextField.js" type="text/javascript"></script>
+	<link href="../static/SpryAssets/SpryValidationTextField.css" rel="stylesheet" type="text/css">
+	<!-- ************************/验证样式************************-->
+	<script src="../static/js/common.js"></script>
+	<script src="../static/js/factory.js"></script>
+	<script src="../static/js/forbidBackSpace.js"></script>
+	<!--显示日期-->
+	<script charset="gb2312" src="../static/js/credit/credit_script.js" type="text/javascript"></script>
+	<script charset="gb2312" src="../static/js/script.js" type="text/javascript"></script>		
+	<script type="text/javascript">
+	
+	</script>	
+</head>
+
+<body onload="showdate();initCreditGrantContent()">
+<!-- ************内容 starts********** -->		
+	<div id="content" class="span10">
+		<div class="Mytips">
+			<span class="tip1"></span>
+			<a href="#" class="tip2">小微企业贷款/&nbsp;贷款发放项目采集</a> 
+			<span id="date" class="tip3"></span>
+			<span class="tip4"></span>
+		</div>
+		
+		<div class="row-fluid">
+			<div class="box span12">
+				<div class="box-header well">
+					<h2><i class="icon-file"></i> 贷款发放项目采集</h2>
+				</div>
+				<div class="box-content">
+					<form class="form-horizontal form-inline span12 " id="credit_grantFrom">
+						<fieldset>
+							<div class="control-group">
+								<label class="control-label" for="customer_number">客户号<font color="red">*</font></label>
+								<div class="controls">
+									<select id="customer_number" data-rel="chosen">
+										<option value="0">----</option>
+										<!-- ajax -->
+									</select>
+  								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="amount_of_credit">贷款金额</label>
+								<div class="controls">
+									<input type="text" id="amount_of_credit" maxlength="12"/>
+  								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="year_of_credit">贷款期限</label>
+								<div class="controls">
+									<input type="text" id="year_of_credit" maxlength="3"/>
+  								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="usage_of_credit">贷款用途</label>
+								<div class="controls">
+									<input type="text" id="usage_of_credit"/>
+  								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="voice_record_of_interview">贷款单位（个人）面签记录，语音</label>
+								<div class="controls" >
+									<input class="input-file uniform_on" id="voice_record_of_interview" name="file" type="file" accept="audio/x-mpeg" onchange="doupload('voice',this);" >
+									<input type="hidden" id="voice_record_of_interview_url" />
+									<span id="voice_record_of_interview_information"></span>
+  								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="voice_record_of_guarantee">担保单位（个人）面签记录，语音</label>
+								<div class="controls">
+									<input class="input-file uniform_on" id="voice_record_of_guarantee" name="file" type="file" accept="audio/x-mpeg" onchange="doupload('voice',this);" >
+									<input type="hidden" id="voice_record_of_guarantee_url" />
+									<span id="voice_record_of_guarantee_information"></span>
+  								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="video_record_of_interview">贷款单位（个人）面签记录，视频</label>
+								<div class="controls">
+									<input class="input-file uniform_on" id="video_record_of_interview" name="file" type="file" accept="video/x-msvideo" onchange="doupload('video',this);" >
+									<input type="hidden" id="video_record_of_interview_url" />
+									<span id="video_record_of_interview_information"></span>
+  								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="video_record_of_guarantee">担保单位（个人）面签记录，视频</label>
+								<div class="controls">
+									<input class="input-file uniform_on" id="video_record_of_guarantee" name="file" type="file" accept="video/x-msvideo" onchange="doupload('video',this);" >
+									<input type="hidden" id="video_record_of_guarantee_url" />
+									<span id="video_record_of_guarantee_information"></span>
+  								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="img_record_of_interview">贷款单位（个人）面签记录，图片</label>
+								<div class="controls">
+									<input class="input-file uniform_on" id="img_record_of_interview" name="file" type="file" accept="image/x-png,image/jpeg" onchange="doupload('img',this);" >
+									<input type="hidden" id="img_record_of_interview_url" />
+									<span id="img_record_of_interview_information"></span>
+  								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="img_record_of_guarantee">担保单位（个人）面签记录，图片</label>
+								<div class="controls">
+									<input class="input-file uniform_on" id="img_record_of_guarantee" name="file" type="file" accept="image/x-png,image/jpeg" onchange="doupload('img',this);" >
+									<input type="hidden" id="img_record_of_guarantee_url" />
+									<span id="img_record_of_guarantee_information"></span>
+  								</div>
+							</div>
+							
+							
+							<div class="form-actions"  >
+								<input type="button" class="btn btn-primary" value="提交" onclick="dosubmit()"/>&nbsp;&nbsp;&nbsp;
+								<button class="btn">重置</button>
+							</div>
+							
+						</fieldset>
+					</form>   
+				</div><!--/box-content-->
+			</div><!--/box-->
+		</div><!--/row-fluid-->
+	</div><!--/#content.span10-->
+	<!-- ************内容 ends********** -->
+	<script type="text/javascript">
+		
+		function dosubmit(){
+			if (Spry.Widget.Form.validate(document.getElementById("credit_grantFrom")) == false){
+	    		alert("表单中填写信息缺失，请完成后提交！");
+       			 return;
+			}
+			
+			var data = JSON.stringify({
+				"customer_id":$("#customer_number").val(),
+		        "amount_of_credit": $("#amount_of_credit").val(),
+		        "year_of_credit": $("#year_of_credit").val()==""?0:$("#year_of_credit").val(),
+		        "usage_of_credit": $("#usage_of_credit").val(),
+		        "voice_record_of_interview": $("#voice_record_of_interview_url").val(),
+		        "voice_record_of_guarantee": $("#voice_record_of_guarantee_url").val(),
+		        "video_record_of_interview": $("#video_record_of_interview_url").val(),
+		        "img_record_of_interview": $("#img_record_of_interview_url").val(),
+		        "img_record_of_guarantee": $("#img_record_of_guarantee_url").val(),
+		        "video_record_of_guarantee": $("#video_record_of_guarantee_url").val(),
+		        "credit_type": 1,
+		        "create_user": 1
+		    });
+		    
+		    //工厂模式
+		    var put = crud.dom.factory("PUT");
+		    var url = "/grantcredit/" + $.evalJSON($("#jsonparam",window.parent.document).val()).id;
+		    put.doPut(url,data,submitCallback,"保存失败！");
+		    //回调
+		    function submitCallback(){
+		        window.location.href = "creditgrant";
+		    }
+		}
+	</script>
+
+	<!-- jQuery -->
+	<script src="../static/js/jquery-1.7.2.min.js"></script>
+	<!-- jQuery UI -->
+	<script src="../static/js/jquery-ui-1.8.21.custom.min.js"></script>
+	<!-- transition / effect library -->
+	<!--<script src="js/bootstrap-transition.js"></script>
+	<!-- alert enhancer library -->
+	<!--<script src="js/bootstrap-alert.js"></script>
+	<!-- modal / dialog library -->
+	<!--<script src="js/bootstrap-modal.js"></script>
+	<!-- custom dropdown library -->
+	<!--<script src="js/bootstrap-dropdown.js"></script>
+	<!-- scrolspy library -->
+	<!--<script src="js/bootstrap-scrollspy.js"></script>
+	<!-- library for creating tabs -->
+	<script src="../static/js/bootstrap-tab.js"></script>
+	<!-- library for advanced tooltip -->
+	<script src="../static/js/bootstrap-tooltip.js"></script>
+	<!-- popover effect library -->
+	<script src="../static/js/bootstrap-popover.js"></script>
+	<!-- button enhancer library -->
+	<!--<script src="js/bootstrap-button.js"></script>
+	<!-- accordion library (optional, not used in demo) -->
+	<!--<script src="js/bootstrap-collapse.js"></script>
+	<!-- carousel slideshow library (optional, not used in demo) -->
+	<!--<script src="js/bootstrap-carousel.js"></script>
+	<!-- autocomplete library -->
+	<!--<script src="js/bootstrap-typeahead.js"></script>
+	<!-- tour library -->
+	<!--<script src="js/bootstrap-tour.js"></script>
+	<!-- library for cookie management -->
+	<script src="../static/js/jquery.cookie.js"></script>
+	<!-- calander plugin -->
+	<script src='../static/js/fullcalendar.min.js'></script>
+	<!-- data table plugin -->
+	<script src='../static/js/jquery.dataTables.min.js'></script>
+
+	<!-- chart libraries start -->
+	<!--<script src="js/excanvas.js"></script>
+	<script src="js/jquery.flot.min.js"></script>
+	<script src="js/jquery.flot.pie.min.js"></script>
+	<script src="js/jquery.flot.stack.js"></script>
+	<script src="js/jquery.flot.resize.min.js"></script>
+	<!-- chart libraries end -->
+
+	<!-- select or dropdown enhancer -->
+	<script src="../static/js/jquery.chosen.min.js"></script>
+	<!-- checkbox, radio, and file input styler -->
+	<script src="../static/js/jquery.uniform.min.js"></script>
+	<!-- plugin for gallery image view -->
+	<script src="../static/js/jquery.colorbox.min.js"></script>
+	<!-- rich text editor library -->
+	<script src="../static/js/jquery.cleditor.min.js"></script>
+	<!-- notification plugin -->
+	<!--<script src="js/jquery.noty.js"></script>
+	<!-- file manager library -->
+	<script src="../static/js/jquery.elfinder.min.js"></script>
+	<!-- star rating plugin -->
+	<script src="../static/js/jquery.raty.min.js"></script>
+	<!-- for iOS style toggle switch -->
+	<script src="../static/js/jquery.iphone.toggle.js"></script>
+	<!-- autogrowing textarea plugin -->
+	<script src="../static/js/jquery.autogrow-textarea.js"></script>
+	<!-- multiple file upload plugin -->
+	<script src="../static/js/jquery.uploadify-3.1.min.js"></script>
+	<!-- history.js for cross-browser state change on ajax -->
+	<script src="../static/js/jquery.history.js"></script>
+	<!-- application script for Charisma demo -->
+	<script src="../static/js/charisma.js"></script>
+	<script src="../static/js/jquery.json-2.4.min.js"></script>
+	<script src="../static/js/ajaxfileupload.js"></script>
+</body>
+</html>

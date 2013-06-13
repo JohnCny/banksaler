@@ -22,10 +22,9 @@ class get_credit_manage_list:
             params=web.input()
             credit_type=params.credit_type
             page=params.page if hasattr(params, 'page') else 1
-            perpage = 10
-            offset = (int(page) - 1) * perpage
-            
-            return json.dumps(credit_manage.get_credit_manage_list_paged(credit_type,offset,perpage),
+            perpage = params.perpage if hasattr(params, 'perpage') else 10
+
+            return json.dumps(credit_manage.get_credit_manage_list_paged(credit_type,page,perpage),
                               cls=encoder.DateEncoder,ensure_ascii=False)
         except:
             return sr.show_result_fail()

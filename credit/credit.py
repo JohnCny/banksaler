@@ -5,6 +5,7 @@ import models
 import json
 import tools.show_result as sr
 import tools.json_encoding as encoder
+import traceback
 
 
 urls=(
@@ -23,10 +24,10 @@ class get_credit_list:
             params=web.input()
             credit_type=params.credit_type
             page=params.page if hasattr(params, 'page') else 1
-            perpage = 10
-            offset = (int(page) - 1) * perpage
+            perpage =params.perpage if hasattr(params, 'perpage') else 10
+
             
-            return json.dumps(credit.get_credit_list_paged(credit_type,offset,perpage),
+            return json.dumps(credit.get_credit_list_paged(credit_type,page,perpage),
                               cls=encoder.DateEncoder,ensure_ascii=False)
         except:
             return sr.show_result_fail()

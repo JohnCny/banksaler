@@ -2,23 +2,14 @@
 import datetime,settings
 import Authenticate.models
 import MySQLdb
+import tools.pagination
 
+pager=tools.pagination.pager()
 db=settings.db
 users=Authenticate.models.users()
 
 class credit:
-    customer_number=''
-    company_name=''
-    company_manager=''
-    manager_id_card=''
-    business_license=''
-    organization_code_certificate=''
-    tax_certificate=''
-    credit_card_nuber=''
-    credit_card_img=''
-    company_articles=''
-    report_of_assets=''
-    shareholder=''
+    customer_id=''
     balance_sheet=''
     gl_sheet=''
     company_img=''
@@ -29,87 +20,71 @@ class credit:
     voice_record=''
     guarantee=''
     GPS=''
-    idcard_name=''
-    idcard_sex=''
-    idcard_birthday=''
-    idcard_nation=''
-    idcard_address=''
-    idcard_num=''
-    idcard_photo=''
     credit_type=''
     status=''
     create_date=''
     create_user=''
 
-    def get_credit_list_paged(self,credit_type,offset,limit):
+    def get_credit_list_paged(self,credit_type,page_num,per_page):
         credit_type=MySQLdb.escape_string(credit_type)
-        result=db.select('credit',what='id,company_name,customer_number',order="create_date DESC",
-                where="credit_type=$credit_type",offset=offset,limit=limit,vars=locals()).list()
-        counts = settings.db.query("SELECT COUNT(*) AS count FROM credit "
-                                   "WHERE credit_type=$credit_type",vars=locals())[0]
-        pages = counts.count / limit
-        
-        if counts.count % limit > 0:
-                pages += 1
+        query_string="""
+                    SELECT cg.id AS id,c.company_name AS company_name,c.customer_number AS customer_number,
+                           cg.customer_id AS customer_id
+                    FROM credit AS cg
+                        INNER JOIN customer as c
+                            ON cg.customer_id=c.id
+                                WHERE cg.credit_type=%s
+                """%credit_type
 
-        result.extend([{'pages':pages}])
+        result=pager.query_result_paged(query_string,page_num,per_page)
+
         return result
 
-    def get_credit_list_query_paged(self,offset,limit,
+    def get_credit_list_query_paged(self,page_num,per_page,
                                     create_user,customer_number,credit_type,beg_date,end_date):
+        customer_number=MySQLdb.escape_string(customer_number)
+        beg_date=MySQLdb.escape_string(beg_date)
+        end_date=MySQLdb.escape_string(end_date)
+
         where=''
         if create_user!=0:
-            where+='create_user=$create_user and '
+            where+='cg.create_user=%s and '%create_user
         if customer_number!='0':
-            where+='customer_number=$customer_number and '
+            where+='c.customer_number=%s and '%customer_number
         if credit_type!=0:
-            where+='credit_type=$credit_type and '
+            where+='cg.credit_type=%s and '%credit_type
         if beg_date!='0' and end_date!='0':
-            where+='create_date between $beg_date and $end_date and '
+            where+="cg.create_date between '%s' and '%s' and "%(beg_date,end_date)
         elif end_date=='0':
-            where+='create_date>=$beg_date and '
+            where+="cg.create_date>='%s' and "%beg_date
         elif beg_date=='0':
-            where+='create_date<=$end_date and '
+            where+="cg.create_date<='%s' and "%end_date
 
         where+='1=1'
 
-        result=db.select('credit',what='id,company_name,customer_number,create_user',
-                         where=where,order="create_date DESC",
-                         offset=offset,limit=limit,vars=locals()).list()
+        query_string="""
+                    SELECT cg.id AS id,c.company_name AS company_name,c.customer_number AS customer_number,
+                           cg.customer_id AS customer_id,u.real_name AS create_user,
+                           cg.credit_type AS credit_type,cg.status AS status,cg.create_date AS create_date
+                    FROM credit AS cg
+                        INNER JOIN customer as c ON cg.customer_id=c.id
+                         INNER JOIN users AS u  on c.create_user=u.id
+                         WHERE
+                    """+where
+        result=pager.query_result_paged(query_string,page_num,per_page)
 
-        for item in result:
-            id=item.create_user
-            item.create_user=users.get_users_by_id(id)[0]['real_name']
-
-        print result
-        counts = len(result)
-
-        pages = counts / limit
-
-        if counts % limit > 0:
-            pages += 1
-
-        result.extend([{'pages':pages}])
         return result
 
     def get_credit_by_id(self,id):
         return db.select('credit', where='id=$id', vars=locals()).list()
 
     def create_credit(self,credit):
-        return db.insert('credit',customer_number=credit.customer_number,company_name=credit.company_name,
-                company_manager=credit.company_manager,manager_id_card=credit.manager_id_card,
-                business_license=credit.business_license,organization_code_certificate=credit.organization_code_certificate,
-                tax_certificate=credit.tax_certificate,credit_card_nuber=credit.credit_card_nuber,
-                credit_card_img=credit.credit_card_img,company_articles=credit.company_articles,
-                report_of_assets=credit.report_of_assets,shareholder=credit.shareholder,
+        return db.insert('credit',customer_id=credit.customer_id,
                 balance_sheet=credit.balance_sheet,gl_sheet=credit.gl_sheet,
                 warehouse_img=credit.warehouse_img,company_img=credit.company_img,
                 stock_relationship=credit.stock_relationship,amount_of_credit=credit.amount_of_credit,
                 year_of_credit=credit.year_of_credit,voice_record=credit.voice_record,
                 guarantee=credit.guarantee,GPS=credit.GPS,
-                idcard_name=credit.idcard_name,idcard_sex=credit.idcard_sex,
-                idcard_birthday=credit.idcard_birthday,idcard_nation=credit.idcard_nation,
-                idcard_address=credit.idcard_address,idcard_num=credit.idcard_num,idcard_photo=credit.idcard_photo,
                 credit_type=credit.credit_type,status=0,
                 create_user=credit.create_user,create_date=datetime.datetime.utcnow()
                 )
@@ -118,35 +93,16 @@ class credit:
         return db.delete('credit', where="id=$id", vars=locals())
 
     def update_credit(self,id,credit):
-        return db.update('credit', where="id=$id",customer_number=credit.customer_number,company_name=credit.company_name,
-                company_manager=credit.company_manager,manager_id_card=credit.manager_id_card,
-                business_license=credit.business_license,organization_code_certificate=credit.organization_code_certificate,
-                tax_certificate=credit.tax_certificate,credit_card_nuber=credit.credit_card_nuber,
-                credit_card_img=credit.credit_card_img,company_articles=credit.company_articles,
-                report_of_assets=credit.report_of_assets,shareholder=credit.shareholder,
+        return db.update('credit', where="id=$id",customer_id=credit.customer_id,
                 balance_sheet=credit.balance_sheet,gl_sheet=credit.gl_sheet,
                 warehouse_img=credit.warehouse_img,company_img=credit.company_img,
                 stock_relationship=credit.stock_relationship,amount_of_credit=credit.amount_of_credit,
                 year_of_credit=credit.year_of_credit,voice_record=credit.voice_record,
                 guarantee=credit.guarantee,GPS=credit.GPS,
-                idcard_name=credit.idcard_name,idcard_sex=credit.idcard_sex,
-                idcard_birthday=credit.idcard_birthday,idcard_nation=credit.idcard_nation,
-                idcard_address=credit.idcard_address,idcard_num=credit.idcard_num,idcard_photo=credit.idcard_photo,
                 status=credit.status,vars=locals())
 
     def set_data(self,data):
-        credit.customer_number=data['customer_number']
-        credit.company_name=data['company_name']
-        credit.company_manager=data['company_manager']
-        credit.manager_id_card=data['manager_id_card']
-        credit.business_license=data['business_license']
-        credit.organization_code_certificate=data['organization_code_certificate']
-        credit.tax_certificate=data['tax_certificate']
-        credit.credit_card_nuber=data['credit_card_nuber']
-        credit.credit_card_img=data['credit_card_img']
-        credit.company_articles=data['company_articles']
-        credit.report_of_assets=data['report_of_assets']
-        credit.shareholder=data['shareholder']
+        credit.customer_id=data['customer_id']
         credit.balance_sheet=data['balance_sheet']
         credit.gl_sheet=data['gl_sheet']
         credit.warehouse_img=data['warehouse_img']
@@ -157,23 +113,14 @@ class credit:
         credit.voice_record=data['voice_record']
         credit.guarantee=data['guarantee']
         credit.GPS=data['GPS']
-        credit.idcard_name=data['idcard_name']
-        credit.idcard_sex=data['idcard_sex']
-        credit.idcard_birthday=data['idcard_birthday']
-        credit.idcard_nation=data['idcard_nation']
-        credit.idcard_address=data['idcard_address']
-        credit.idcard_num=data['idcard_num']
-        credit.idcard_photo=data['idcard_photo']
         credit.credit_type=data['credit_type']
         credit.status=data['status']
         credit.create_user=data['create_user']
-        credit.create_date=data['create_date']
 
         return credit
 
 class credit_grant:
-    customer_number=''
-    company_name=''
+    customer_id=''
     amount_of_credit=''
     year_of_credit=''
     usage_of_credit=''
@@ -187,61 +134,61 @@ class credit_grant:
     create_user=''
     create_date=''
 
-    def get_credit_grant_list_query_paged(self,offset,limit,
+    def get_credit_grant_list_query_paged(self,page_num,per_page,
                                     create_user,customer_number,credit_type,beg_date,end_date):
+        customer_number=MySQLdb.escape_string(customer_number)
+        beg_date=MySQLdb.escape_string(beg_date)
+        end_date=MySQLdb.escape_string(end_date)
+
         where=''
         if create_user!=0:
-            where+='create_user=$create_user and '
+            where+='cg.create_user=%s and '%create_user
         if customer_number!='0':
-            where+='customer_number=$customer_number and '
+            where+='c.customer_number=%s and '%customer_number
         if credit_type!=0:
-            where+='credit_type=$credit_type and '
+            where+='cg.credit_type=%s and '%credit_type
         if beg_date!='0' and end_date!='0':
-            where+='create_date between $beg_date and $end_date and '
+            where+='cg.create_date between %s and %s and '%(beg_date,end_date)
         elif end_date=='0':
-            where+='create_date>=$beg_date and '
+            where+='cg.create_date>=%s and '%beg_date
         elif beg_date=='0':
-            where+='create_date<=$end_date and '
+            where+='cg.create_date<=%s and '%end_date
 
         where+='1=1'
 
-        result=db.select('credit_grant',what='id,company_name,customer_number,create_user',
-                         where=where,order="create_date DESC",
-                         offset=offset,limit=limit,vars=locals()).list()
-        for item in result:
-            id=item.create_user
-            item.create_user=users.get_users_by_id(id)[0]['real_name']
+        query_string="""
+                    SELECT cg.id AS id,c.company_name AS company_name,c.customer_number AS customer_number,
+                           cg.customer_id AS customer_id,u.real_name AS create_user,
+                           cg.credit_type AS credit_type,cg.status AS status,cg.create_date AS create_date
+                    FROM credit_grant AS cg
+                        INNER JOIN customer as c ON cg.customer_id=c.id
+                         INNER JOIN users AS u  on c.create_user=u.id
+                          WHERE
+                    """+where
+        result=pager.query_result_paged(query_string,page_num,per_page)
 
-        counts = len(result)
-
-        pages = counts / limit
-
-        if counts % limit > 0:
-            pages += 1
-
-        result.extend([{'pages':pages}])
         return result
 
-
-    def get_credit_grant_list_paged(self,credit_type,offset,limit):
+    def get_credit_grant_list_paged(self,credit_type,page_num,per_page):
         credit_type=MySQLdb.escape_string(credit_type)
-        result=db.select('credit_grant',what='id,company_name,customer_number',order="create_date DESC",
-                         where="credit_type=$credit_type",offset=offset,limit=limit,vars=locals()).list()
-        counts = settings.db.query("SELECT COUNT(*) AS count FROM credit_grant "
-                                   "WHERE credit_type=$credit_type",vars=locals())[0]
-        pages = counts.count / limit
+        query_string="""
+                    SELECT cg.id AS id,c.company_name AS company_name,c.customer_number AS customer_number
+                           ,cg.customer_id AS customer_id
+                    FROM credit_grant AS cg
+                        INNER JOIN customer as c
+                            ON cg.customer_id=c.id
+                                WHERE cg.credit_type=%s
+                """%credit_type
 
-        if counts.count % limit > 0:
-            pages += 1
+        result=pager.query_result_paged(query_string,page_num,per_page)
 
-        result.extend([{'pages':pages}])
         return result
 
     def get_credit_grant_by_id(self,id):
         return db.select('credit_grant', where='id=$id', vars=locals()).list()
 
     def create_credit_grant(self,credit_grant):
-        return db.insert('credit_grant',customer_number=credit_grant.customer_number,company_name=credit_grant.company_name,
+        return db.insert('credit_grant',customer_id=credit_grant.customer_id,
                 amount_of_credit=credit_grant.amount_of_credit,year_of_credit=credit_grant.year_of_credit,
                 usage_of_credit=credit_grant.usage_of_credit,voice_record_of_interview=credit_grant.voice_record_of_interview,
                 video_record_of_interview=credit_grant.video_record_of_interview,voice_record_of_guarantee=credit_grant.voice_record_of_guarantee,
@@ -254,7 +201,7 @@ class credit_grant:
         return db.delete('credit_grant', where="id=$id", vars=locals())
 
     def update_credit_grant(self,id,credit_grant):
-        return db.update('credit_grant', where="id=$id",customer_number=credit_grant.customer_number,company_name=credit_grant.company_name,
+        return db.update('credit_grant', where="id=$id",
                 amount_of_credit=credit_grant.amount_of_credit,year_of_credit=credit_grant.year_of_credit,
                 usage_of_credit=credit_grant.usage_of_credit,voice_record_of_interview=credit_grant.voice_record_of_interview,
                 video_record_of_interview=credit_grant.video_record_of_interview,voice_record_of_guarantee=credit_grant.voice_record_of_guarantee,
@@ -262,8 +209,7 @@ class credit_grant:
                 video_record_of_guarantee=credit_grant.video_record_of_guarantee,vars=locals())
 
     def set_data(self,data):
-        credit_grant.customer_number=data['customer_number']
-        credit_grant.company_name=data['company_name']
+        credit_grant.customer_id=data['customer_id']
         credit_grant.amount_of_credit=data['amount_of_credit']
         credit_grant.year_of_credit=data['year_of_credit']
         credit_grant.usage_of_credit=data['usage_of_credit']
@@ -279,17 +225,8 @@ class credit_grant:
         return credit_grant
 
 class credit_manage:
-    customer_number=''
-    company_name=''
-    manager_id_card=''
-    business_license=''
-    organization_code_certificate=''
-    tax_certificate=''
-    credit_card_nuber=''
-    credit_card_img=''
-    company_articles=''
+    customer_id=''
     capital_verification_report=''
-    shareholder=''
     usage_of_credit=''
     is_meet_credit_requirements=''
     operation=''
@@ -303,65 +240,63 @@ class credit_manage:
     modify_date=''
     modify_user=''
 
-    def get_credit_manage_list_query_paged(self,offset,limit,
+    def get_credit_manage_list_query_paged(self,page_num,per_page,
                                           create_user,customer_number,credit_type,beg_date,end_date):
+        customer_number=MySQLdb.escape_string(customer_number)
+        beg_date=MySQLdb.escape_string(beg_date)
+        end_date=MySQLdb.escape_string(end_date)
+
         where=''
         if create_user!=0:
-            where+='create_user=$create_user and '
+            where+='cg.create_user=%s and '%create_user
         if customer_number!='0':
-            where+='customer_number=$customer_number and '
+            where+='c.customer_number=%s and '%customer_number
         if credit_type!=0:
-            where+='credit_type=$credit_type and '
+            where+='cg.credit_type=%s and '%credit_type
         if beg_date!='0' and end_date!='0':
-            where+='create_date between $beg_date and $end_date and '
+            where+='cg.create_date between %s and %s and '%(beg_date,end_date)
         elif end_date=='0':
-            where+='create_date>=$beg_date and '
+            where+='cg.create_date>=%s and '%beg_date
         elif beg_date=='0':
-            where+='create_date<=$end_date and '
+            where+='cg.create_date<=%s and '%end_date
 
         where+='1=1'
 
-        result=db.select('credit_manage',what='id,company_name,customer_number,create_user',
-                         where=where,order="create_date DESC",
-                         offset=offset,limit=limit,vars=locals()).list()
-        for item in result:
-            id=item.create_user
-            item.create_user=users.get_users_by_id(id)[0]['real_name']
+        query_string="""
+                        SELECT cg.id AS id,c.company_name AS company_name,c.customer_number AS customer_number,
+                               cg.customer_id AS customer_id,u.real_name AS create_user,
+                               cg.credit_type AS credit_type,cg.status AS status,cg.create_date AS create_date
+                        FROM credit_manage AS cg
+                         INNER JOIN customer as c ON cg.customer_id=c.id
+                          INNER JOIN users AS u  on c.create_user=u.id
+                           WHERE
+                        """+where
+        result=pager.query_result_paged(query_string,page_num,per_page)
 
-        counts = len(result)
-
-        pages = counts / limit
-
-        if counts % limit > 0:
-            pages += 1
-
-        result.extend([{'pages':pages}])
         return result
 
 
-    def get_credit_manage_list_paged(self,credit_type,offset,limit):
+    def get_credit_manage_list_paged(self,credit_type,page_num,per_page):
         credit_type=MySQLdb.escape_string(credit_type)
-        result=db.select('credit_manage',what='id,company_name,customer_number',order="create_date DESC",
-                         where="credit_type=$credit_type",offset=offset,limit=limit,vars=locals()).list()
-        counts = settings.db.query("SELECT COUNT(*) AS count FROM credit_manage "
-                                   "WHERE credit_type=$credit_type",vars=locals())[0]
-        pages = counts.count / limit
+        query_string="""
+                    SELECT cg.id AS id,c.company_name AS company_name,c.customer_number AS customer_number,
+                            cg.customer_id AS customer_id
+                    FROM credit_manage AS cg
+                        INNER JOIN customer as c
+                            ON cg.customer_id=c.id
+                                WHERE cg.credit_type=%s
+                """%credit_type
 
-        if counts.count % limit > 0:
-            pages += 1
+        result=pager.query_result_paged(query_string,page_num,per_page)
 
-        result.extend([{'pages':pages}])
         return result
 
     def get_credit_manage_by_id(self,id):
         return db.select('credit_manage', where='id=$id', vars=locals()).list()
 
     def create_credit_manage(self,credit_manage):
-        return db.insert('credit_manage',customer_number=credit_manage.customer_number,company_name=credit_manage.company_name,
-                manager_id_card=credit_manage.manager_id_card,tax_certificate=credit_manage.tax_certificate,
-                business_license=credit_manage.business_license,organization_code_certificate=credit_manage.organization_code_certificate,
-                credit_card_img=credit_manage.credit_card_img,company_articles=credit_manage.company_articles,
-                capital_verification_report=credit_manage.capital_verification_report,shareholder=credit_manage.shareholder,
+        return db.insert('credit_manage',customer_id=credit_manage.customer_id,
+                capital_verification_report=credit_manage.capital_verification_report,
                 usage_of_credit=credit_manage.usage_of_credit,is_meet_credit_requirements=credit_manage.is_meet_credit_requirements,
                 operation=credit_manage.operation,operation_img=credit_manage.operation_img,
                 guarantee_status=credit_manage.guarantee_status,GPS=credit_manage.GPS,
@@ -374,11 +309,8 @@ class credit_manage:
         return db.delete('credit_manage', where="id=$id", vars=locals())
 
     def update_credit_manage(self,id,credit):
-        return db.update('credit_manage', where="id=$id",customer_number=credit_manage.customer_number,company_name=credit_manage.company_name,
-                manager_id_card=credit_manage.manager_id_card,tax_certificate=credit_manage.tax_certificate,
-                business_license=credit_manage.business_license,organization_code_certificate=credit_manage.organization_code_certificate,
-                credit_card_img=credit_manage.credit_card_img,company_articles=credit_manage.company_articles,
-                capital_verification_report=credit_manage.capital_verification_report,shareholder=credit_manage.shareholder,
+        return db.update('credit_manage', where="id=$id",customer_id=credit_manage.customer_id,
+                capital_verification_report=credit_manage.capital_verification_report,
                 usage_of_credit=credit_manage.usage_of_credit,is_meet_credit_requirements=credit_manage.is_meet_credit_requirements,
                 operation=credit_manage.operation,operation_img=credit_manage.operation_img,
                 guarantee_status=credit_manage.guarantee_status,GPS=credit_manage.GPS,
@@ -386,16 +318,8 @@ class credit_manage:
                 modify_date=datetime.datetime.utcnow(),vars=locals())
 
     def set_data(self,data):
-        credit_manage.customer_number=data['customer_number']
-        credit_manage.company_name=data['company_name']
-        credit_manage.manager_id_card=data['manager_id_card']
-        credit_manage.business_license=data['business_license']
-        credit_manage.organization_code_certificate=data['organization_code_certificate']
-        credit_manage.tax_certificate=data['tax_certificate']
-        credit_manage.credit_card_img=data['credit_card_img']
-        credit_manage.company_articles=data['company_articles']
+        credit_manage.customer_id=data['customer_id']
         credit_manage.capital_verification_report=data['capital_verification_report']
-        credit_manage.shareholder=data['shareholder']
         credit_manage.usage_of_credit=data['usage_of_credit']
         credit_manage.is_meet_credit_requirements=data['is_meet_credit_requirements']
         credit_manage.operation=data['operation']

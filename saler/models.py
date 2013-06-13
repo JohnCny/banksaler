@@ -42,13 +42,13 @@ class saler_target:
         end_date=MySQLdb.escape_string(end_date)
 
         if create_user!=0:
-            where+='create_user=%(create_user)s and '%create_user
+            where+='create_user=%s and '%create_user
         if beg_date!='0' and end_date!='0':
-            where+='create_date between %(beg_date)s and %(end_date)s and '%(beg_date,end_date)
+            where+='create_date between %s and %s and '%(beg_date,end_date)
         elif end_date=='0':
-            where+='create_date>=%(beg_date)s and '%beg_date
+            where+='create_date>=%s and '%beg_date
         elif beg_date=='0':
-            where+='create_date<=%(end_date)s and '%end_date
+            where+='create_date<=%s and '%end_date
 
         where+='1=1'
 

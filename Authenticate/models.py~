@@ -326,9 +326,12 @@ class auth_key:
         auth_key.auth_key=data['auth_key']
     
         return auth_key 
+    
+    def get_users_id(self,auth_key):
+        return db.query("select users_id from auth_key where auth_key=$auth_key",vars=locals())[0]
 
-    def check_auth_key(self,user_id,auth_key):
-        result=db.select('auth_key',where="user_id=$user_id and auth_key=$auth_key",vars=locals()).list()
+    def check_auth_key(self,auth_key):
+        result=db.select('auth_key',where="auth_key=$auth_key",vars=locals()).list()
         return len(result)
 
     def create_auth_key(self,auth_key):

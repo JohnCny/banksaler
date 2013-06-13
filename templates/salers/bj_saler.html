@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	
+	<meta charset="utf-8">
+	<title>客户经理营销系统</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Charisma, a fully featured, responsive, HTML5, Bootstrap admin template.">
+	<meta name="author" content="Muhammad Usman">
+
+	<!-- The styles -->
+	<link href="../static/css/uniform.default.css" rel="stylesheet">
+	<link href="../static/css/jquery-ui-1.8.21.custom.css" rel="stylesheet"><!--日历样式-->
+	<link href="../static/css/bootstrap-cerulean.css" rel="stylesheet">
+	<link href="../static/css/charisma-app.css" rel="stylesheet">
+	<link href="../static/css/chosen.css" rel="stylesheet">
+	<style type="text/css">
+		.controls input[type=radio]{margin-top:-2px;margin-right:5px;}
+		label{margin-right:15px;}
+		input[type=text]{width:130px;margin-left:10px;}
+		select{width:145px;}
+		textarea{width:400px;resize:none;}
+		.box-content{padding:0;}
+		.form-horizontal .control-label{width:140px;}		
+		.form-horizontal .controls textarea{margin-left:10px;}
+	</style>
+	<!-- ************************验证样式************************-->
+	<script src="../static/SpryAssets/SpryValidationTextField.js" type="text/javascript"></script>
+	<link href="../static/SpryAssets/SpryValidationTextField.css" rel="stylesheet" type="text/css">
+	<!-- ************************/验证样式************************-->
+	<script src="../static/js/common.js"></script>
+	<script src="../static/js/factory.js"></script>
+	<script src="../static/js/forbidBackSpace.js"></script>
+	<!--显示日期-->
+	<script charset="gb2312" src="../static/js/salers/salers_script.js" type="text/javascript"></script>
+	<script charset="gb2312" src="../static/js/script.js" type="text/javascript"></script>	
+	<script type="text/javascript">
+	//表单提交-添加新产品
+	function dosubmit(){	
+		if (Spry.Widget.Form.validate(document.forms[0]) == false){
+			alert("表单中填写信息缺失，请完成后提交！");
+			return;
+		}
+		
+		var data = JSON.stringify({
+	        "company_name": $("#company_name").val(),
+	        "company_manager": $("#company_manager").val(),
+	        "company_addr": $("#company_addr").val(),
+	        "main_operating_range": $("#main_operating_range_id").val(),
+	        "staff_amount": $("#staff_amount").val()==""?0:$("#staff_amount").val(),
+	        "last_year_operating": $("#last_year_operating").val(),
+	        "main_bank": $("#main_bank").val(),
+	        "have_credit": $('input:radio[name="have_credit"]:checked').val(),
+	        "is_customer": $('input:radio[name="is_customer"]:checked').val(),
+	        "is_credit_customer": $('input:radio[name="is_credit_customer"]:checked').val(),
+	        "saler_opinion": $("#saler_opinion").val(),
+	        "create_user": 1,
+	        "modify_user": 1
+	    });
+	    //工厂模式
+	    var put = crud.dom.factory("PUT");
+	    var url = "/saler/" + $.evalJSON($("#jsonparam",window.parent.document).val()).id;
+	    put.doPut(url,data,submitCallback,"保存失败！");
+	    //回调
+	 	function submitCallback(){
+	 		window.location.href = "shgl";
+	 	}
+	}
+	</script>	
+</head>
+
+<body onload="showdate();initSalerContent();">
+<!-- ************内容 starts********** -->		
+	<div id="content" class="span10">
+		<div class="Mytips">
+			<span class="tip1"></span>
+			<a href="#" class="tip2">客户经理客户拓展/&nbsp;客户拓展/&nbsp;编辑</a> 
+			<span id="date" class="tip3"></span>
+			<span class="tip4"></span>
+		</div>
+		
+		<div class="row-fluid">
+			<div class="box span12">
+				<div class="box-header well">
+					<h2><i class="icon-screenshot"></i> 编辑</h2>
+				</div>
+				<div class="box-content" style="padding:0;">
+					<form class="form-horizontal form-inline span12 ">
+						<fieldset>
+							<div class="control-group">
+								<label class="control-label" for="company_name">单位名称<font color="red">*</font></label>
+								<div class="controls">
+									<span id="spry_companyname">
+  										<input type="text" name="company_name" id="company_name" style="width:18em;"/>
+  										<span class="textfieldRequiredMsg">
+  											<span class="badge badge-important">!</span> 单位名称不能为空
+  										</span>
+  									</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="company_addr">单位地址<font color="red">*</font></label>
+								<div class="controls">
+									<span id="spry_compantaddr">
+    									<input type="text" name="company_addr" id="company_addr" style="width:18em;"/>
+   										<span class="textfieldRequiredMsg">
+   											<span class="badge badge-important">!</span> 单位地址不能为空
+   										</span>
+   									</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="company_manager">单位负责人<font color="red">*</font></label>
+								<div class="controls">
+									<span id="spry_companymanager">
+  										<input type="text" name="company_manager" id="company_manager" />
+    									<span class="textfieldRequiredMsg">
+    										<span class="badge badge-important">!</span> 单位负责人不能为空
+    									</span>
+    								</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="main_operating_range_id" >经营范围</label>
+								<div class="controls">
+									<span style="margin-left:10px;">
+										<select id="main_operating_range_id" data-rel="chosen">
+											<option value="1">钢材</option>
+											<option value="2">纺织</option>
+											<option value="3">物流</option>
+										</select>
+									</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="staff_amount">员工人数</label>
+								<div class="controls">
+									<input type="text" id="staff_amount" onKeyUp="value=value.replace(/\D/g,'')" onafterpaste="value=value.replace(/\D/g,'')">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="last_year_operating">上一年经营情况</label>
+								<div class="controls">
+									<input type="text" id="last_year_operating">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="main_bank">目前主要开户银行</label>
+								<div class="controls">
+									<input type="text" id="main_bank">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">是否有贷款</label>
+								<div class="controls">
+									<label style="margin-left:10px;">
+										<input type='radio' name='have_credit' id='yes1' class="inline"  value="1"/>
+										<label for='yes1'>是</label>
+										<input type='radio' name='have_credit' id='no1' value="0"/>
+										<label for='no1'>否</label>
+									</label>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">能否成为我行客户</label>
+								<div class="controls">
+									<label style="margin-left:10px;">
+										<input type='radio' name='is_customer' id='yes2'  value="1"/>
+										<label for='yes2'>能</label>
+										<input type='radio' name='is_customer' id='no2' value="0"/>
+										<label for='no2'>否</label>
+									</label>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">能否成为我行信贷客户</label>
+								<div class="controls">
+									<label style="margin-left:10px;">
+										<input type='radio' name='is_credit_customer' id='yes3'  value="1"/>
+										<label for='yes3'>能</label>
+										<input type='radio' name='is_credit_customer' id='no3' value="0"/>
+										<label for='no3'>否</label>
+									</label>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="saler_opinion" style="padding-bottom:120px;">客户经理意见</label>
+								<div class="controls">
+									<textarea rows="6" id="saler_opinion">客户经理意见客户经理意见客户经理意见</textarea>
+								</div>
+							</div>
+							<div class="form-actions" >
+								<button type="button" class="btn btn-primary" onclick="dosubmit();">提交</button>&nbsp;&nbsp;&nbsp;
+								<button class="btn">重置</button>
+							</div>
+						</fieldset>
+					</form>   
+				</div><!--/box-content-->
+			</div><!--/box-->
+		</div><!--/row-fluid-->
+	</div><!--/#content.span10-->
+	<!-- ************内容 ends********** -->
+	<script type="text/javascript">
+		var sprytextfield1 = new Spry.Widget.ValidationTextField("spry_companyname", "none", {validateOn:["blur"]});
+		var sprytextfield2 = new Spry.Widget.ValidationTextField("spry_companymanager", "none", {validateOn:["blur"]});
+		var sprytextfield3 = new Spry.Widget.ValidationTextField("spry_compantaddr", "none", {validateOn:["blur"]});
+	</script>
+
+	<!-- jQuery -->
+	<script src="../static/js/jquery-1.7.2.min.js"></script>
+	<!-- jQuery UI -->
+	<script src="../static/js/jquery-ui-1.8.21.custom.min.js"></script>
+	<!-- transition / effect library -->
+	<!--<script src="js/bootstrap-transition.js"></script>
+	<!-- alert enhancer library -->
+	<!--<script src="js/bootstrap-alert.js"></script>
+	<!-- modal / dialog library -->
+	<!--<script src="js/bootstrap-modal.js"></script>
+	<!-- custom dropdown library -->
+	<!--<script src="js/bootstrap-dropdown.js"></script>
+	<!-- scrolspy library -->
+	<!--<script src="js/bootstrap-scrollspy.js"></script>
+	<!-- library for creating tabs -->
+	<script src="../static/js/bootstrap-tab.js"></script>
+	<!-- library for advanced tooltip -->
+	<script src="../static/js/bootstrap-tooltip.js"></script>
+	<!-- popover effect library -->
+	<script src="../static/js/bootstrap-popover.js"></script>
+	<!-- button enhancer library -->
+	<!--<script src="js/bootstrap-button.js"></script>
+	<!-- accordion library (optional, not used in demo) -->
+	<!--<script src="js/bootstrap-collapse.js"></script>
+	<!-- carousel slideshow library (optional, not used in demo) -->
+	<!--<script src="js/bootstrap-carousel.js"></script>
+	<!-- autocomplete library -->
+	<!--<script src="js/bootstrap-typeahead.js"></script>
+	<!-- tour library -->
+	<!--<script src="js/bootstrap-tour.js"></script>
+	<!-- library for cookie management -->
+	<script src="../static/js/jquery.cookie.js"></script>
+	<!-- calander plugin -->
+	<script src='../static/js/fullcalendar.min.js'></script>
+	<!-- data table plugin -->
+	<script src='../static/js/jquery.dataTables.min.js'></script>
+
+	<!-- chart libraries start -->
+	<!--<script src="js/excanvas.js"></script>
+	<script src="js/jquery.flot.min.js"></script>
+	<script src="js/jquery.flot.pie.min.js"></script>
+	<script src="js/jquery.flot.stack.js"></script>
+	<script src="js/jquery.flot.resize.min.js"></script>
+	<!-- chart libraries end -->
+
+	<!-- select or dropdown enhancer -->
+	<script src="../static/js/jquery.chosen.min.js"></script>
+	<!-- checkbox, radio, and file input styler -->
+	<script src="../static/js/jquery.uniform.min.js"></script>
+	<!-- plugin for gallery image view -->
+	<script src="../static/js/jquery.colorbox.min.js"></script>
+	<!-- rich text editor library -->
+	<script src="../static/js/jquery.cleditor.min.js"></script>
+	<!-- notification plugin -->
+	<!--<script src="js/jquery.noty.js"></script>
+	<!-- file manager library -->
+	<script src="../static/js/jquery.elfinder.min.js"></script>
+	<!-- star rating plugin -->
+	<script src="../static/js/jquery.raty.min.js"></script>
+	<!-- for iOS style toggle switch -->
+	<script src="../static/js/jquery.iphone.toggle.js"></script>
+	<!-- autogrowing textarea plugin -->
+	<script src="../static/js/jquery.autogrow-textarea.js"></script>
+	<!-- multiple file upload plugin -->
+	<script src="../static/js/jquery.uploadify-3.1.min.js"></script>
+	<!-- history.js for cross-browser state change on ajax -->
+	<script src="../static/js/jquery.history.js"></script>
+	<!-- application script for Charisma demo -->
+	<script src="../static/js/charisma.js"></script>
+
+	<script src="../static/js/jquery.json-2.4.min.js"></script>
+</body>
+</html>

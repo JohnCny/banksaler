@@ -14,10 +14,6 @@ urls=(
 )
 
 credit=models.credit()
-HERE = os.path.dirname(__file__)
-BASE_PATH= os.path.join(HERE,'..')
-IMG_PATH= os.path.join(BASE_PATH,'/img')
-
 
 """只返回id,公司名称，公司法人"""
 class get_credit_list:
